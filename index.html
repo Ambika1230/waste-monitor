@@ -21,47 +21,25 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 30px;
     }
 
     .card {
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
       margin: 15px;
-      padding: 25px;
+      padding: 20px;
       border-radius: 15px;
       width: 260px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      transition: 0.3s;
     }
 
-    .card:hover {
-      transform: scale(1.05);
+    iframe {
+      border-radius: 10px;
+      margin: 10px;
     }
 
-    .value {
-      font-size: 30px;
-      margin: 10px 0;
-    }
-
-    .status {
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .full {
-      color: #ff4d4d;
-    }
-
-    .ok {
-      color: #00ffcc;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      opacity: 0.8;
-    }
+    .full { color: red; }
+    .ok { color: lightgreen; }
   </style>
 </head>
 
@@ -73,27 +51,35 @@
 
   <div class="card">
     <h2>Wet Bin</h2>
-    <div id="wetVal" class="value">--</div>
-    <div id="wetStatus" class="status"></div>
+    <p id="wet"></p>
   </div>
 
   <div class="card">
     <h2>Dry Bin</h2>
-    <div id="dryVal" class="value">--</div>
-    <div id="dryStatus" class="status"></div>
+    <p id="dry"></p>
   </div>
 
   <div class="card">
     <h2>Moisture</h2>
-    <div id="moistVal" class="value">--</div>
-    <div id="moistStatus" class="status"></div>
+    <p id="moisture"></p>
   </div>
 
 </div>
 
-<footer>
-  Live Data from ThingSpeak | Updated every 5 sec
-</footer>
+<h2>📊 Live Charts</h2>
+
+<!-- Charts -->
+<iframe width="450" height="260"
+src="https://thingspeak.com/channels/3339508/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true">
+</iframe>
+
+<iframe width="450" height="260"
+src="https://thingspeak.com/channels/3339508/charts/2?bgcolor=%23ffffff&color=%2300aaff&dynamic=true">
+</iframe>
+
+<iframe width="450" height="260"
+src="https://thingspeak.com/channels/3339508/charts/3?bgcolor=%23ffffff&color=%2300cc66&dynamic=true">
+</iframe>
 
 <script>
 async function getData() {
@@ -104,20 +90,14 @@ async function getData() {
   let dry = parseFloat(data.field2);
   let moisture = parseFloat(data.field3);
 
-  // Wet bin
-  document.getElementById("wetVal").innerText = wet + " cm";
-  document.getElementById("wetStatus").innerHTML =
-    wet < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>";
+  document.getElementById("wet").innerHTML =
+    wet + " cm " + (wet < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
 
-  // Dry bin
-  document.getElementById("dryVal").innerText = dry + " cm";
-  document.getElementById("dryStatus").innerHTML =
-    dry < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>";
+  document.getElementById("dry").innerHTML =
+    dry + " cm " + (dry < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
 
-  // Moisture
-  document.getElementById("moistVal").innerText = moisture + "%";
-  document.getElementById("moistStatus").innerHTML =
-    moisture > 60 ? "<span class='full'>WET 💧</span>" : "<span class='ok'>DRY 🟡</span>";
+  document.getElementById("moisture").innerHTML =
+    moisture + "% " + (moisture > 60 ? "<span class='full'>WET 💧</span>" : "<span class='ok'>DRY 🟡</span>");
 }
 
 setInterval(getData, 5000);
