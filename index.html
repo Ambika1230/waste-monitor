@@ -4,11 +4,14 @@
   <title>Smart Waste Monitoring</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: white;
       text-align: center;
     }
@@ -24,18 +27,18 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.1);
       margin: 15px;
       padding: 20px;
       border-radius: 15px;
       width: 260px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    iframe {
+    canvas {
+      margin: 20px;
+      background: white;
       border-radius: 10px;
-      margin: 10px;
     }
 
     .full { color: red; }
@@ -45,10 +48,9 @@
 
 <body>
 
-<h1>🚮 Smart Waste Monitoring System</h1>
+<h1>🚮 Smart Waste Monitoring Dashboard</h1>
 
 <div class="container">
-
   <div class="card">
     <h2>Wet Bin</h2>
     <p id="wet"></p>
@@ -63,25 +65,35 @@
     <h2>Moisture</h2>
     <p id="moisture"></p>
   </div>
-
 </div>
 
-<h2>📊 Live Charts</h2>
+<h2>📊 Live Data Charts</h2>
 
-<!-- Charts -->
-<iframe width="450" height="260"
-src="https://thingspeak.com/channels/3339508/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true">
-</iframe>
-
-<iframe width="450" height="260"
-src="https://thingspeak.com/channels/3339508/charts/2?bgcolor=%23ffffff&color=%2300aaff&dynamic=true">
-</iframe>
-
-<iframe width="450" height="260"
-src="https://thingspeak.com/channels/3339508/charts/3?bgcolor=%23ffffff&color=%2300cc66&dynamic=true">
-</iframe>
+<canvas id="wetChart" width="400" height="200"></canvas>
+<canvas id="dryChart" width="400" height="200"></canvas>
+<canvas id="moistChart" width="400" height="200"></canvas>
 
 <script>
+let wetData = [];
+let dryData = [];
+let moistData = [];
+let labels = [];
+
+const wetChart = new Chart(document.getElementById("wetChart"), {
+  type: "line",
+  data: { labels: labels, datasets: [{ label: "Wet Bin", data: wetData, borderColor: "red" }] }
+});
+
+const dryChart = new Chart(document.getElementById("dryChart"), {
+  type: "line",
+  data: { labels: labels, datasets: [{ label: "Dry Bin", data: dryData, borderColor: "blue" }] }
+});
+
+const moistChart = new Chart(document.getElementById("moistChart"), {
+  type: "line",
+  data: { labels: labels, datasets: [{ label: "Moisture", data: moistData, borderColor: "green" }] }
+});
+
 async function getData() {
   let res = await fetch("https://api.thingspeak.com/channels/3339508/feeds/last.json");
   let data = await res.json();
@@ -90,6 +102,7 @@ async function getData() {
   let dry = parseFloat(data.field2);
   let moisture = parseFloat(data.field3);
 
+  // Update text
   document.getElementById("wet").innerHTML =
     wet + " cm " + (wet < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
 
@@ -98,6 +111,25 @@ async function getData() {
 
   document.getElementById("moisture").innerHTML =
     moisture + "% " + (moisture > 60 ? "<span class='full'>WET 💧</span>" : "<span class='ok'>DRY 🟡</span>");
+
+  // Update charts
+  let time = new Date().toLocaleTimeString();
+
+  labels.push(time);
+  wetData.push(wet);
+  dryData.push(dry);
+  moistData.push(moisture);
+
+  if (labels.length > 10) {
+    labels.shift();
+    wetData.shift();
+    dryData.shift();
+    moistData.shift();
+  }
+
+  wetChart.update();
+  dryChart.update();
+  moistChart.update();
 }
 
 setInterval(getData, 5000);
