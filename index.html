@@ -1,180 +1,701 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>IoT Waste Monitoring Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Chart.js -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WasteIQ — Smart Waste Monitor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
-
   <style>
+    :root {
+      --bg: #080c10;
+      --surface: #0d1117;
+      --card: #111820;
+      --border: #1e2d3d;
+      --accent-dry: #00e5ff;
+      --accent-ewaste: #ff6b35;
+      --accent-metal: #a78bfa;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      background: #0f172a;
-      color: white;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
+    /* ── GRID BG ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
     header {
-      background: #1e293b;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 600;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      background: rgba(13,17,23,.9);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
     }
 
-    .container {
-      padding: 20px;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.03);
-    }
-
-    .card h2 {
-      margin-bottom: 10px;
-      font-size: 18px;
-      color: #94a3b8;
-    }
-
-    .value {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .full {
-      color: #ef4444;
-    }
-
-    .ok {
-      color: #22c55e;
-    }
-
-    .charts {
-      margin-top: 30px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-
-    canvas {
-      background: white;
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--accent-dry), #0070ff);
       border-radius: 10px;
-      padding: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
     }
 
+    .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--accent-dry); }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.25);
+      border-radius: 20px;
+      color: var(--ok);
+      font-size: 11px;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: var(--ok);
+      border-radius: 50%;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(.8); }
+    }
+
+    /* ── ALERT BANNER ── */
+    #alert-banner {
+      display: none;
+      position: relative; z-index: 9;
+      background: linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.05));
+      border-bottom: 1px solid rgba(239,68,68,.3);
+      padding: 10px 32px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--danger);
+      animation: slideDown .3s ease;
+    }
+
+    #alert-banner.visible { display: block; }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* ── MAIN ── */
+    main {
+      position: relative; z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── GAUGE CARDS ── */
+    .gauge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .gauge-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+
+    .gauge-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .gauge-card.dry::before  { background: linear-gradient(90deg, var(--accent-dry), transparent); }
+    .gauge-card.ewaste::before { background: linear-gradient(90deg, var(--accent-ewaste), transparent); }
+
+    .gauge-card.alert-active {
+      border-color: rgba(239,68,68,.5);
+      box-shadow: 0 0 30px rgba(239,68,68,.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .card-icon { font-size: 26px; }
+
+    .gauge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* SVG Arc Gauge */
+    .gauge-svg { overflow: visible; }
+
+    .gauge-track { fill: none; stroke: rgba(255,255,255,.06); }
+    .gauge-fill  { fill: none; stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1); }
+
+    .gauge-value {
+      font-size: 44px;
+      font-weight: 800;
+      font-family: var(--sans);
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .gauge-unit {
+      font-size: 14px;
+      fill: var(--muted);
+      text-anchor: middle;
+      font-family: var(--mono);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      transition: .3s;
+    }
+
+    .status-badge.ok     { background: rgba(34,197,94,.12); color: var(--ok);   border: 1px solid rgba(34,197,94,.25); }
+    .status-badge.warn   { background: rgba(245,158,11,.12); color: var(--warn); border: 1px solid rgba(245,158,11,.25); }
+    .status-badge.danger { background: rgba(239,68,68,.12);  color: var(--danger); border: 1px solid rgba(239,68,68,.25); animation: blink .8s ease infinite; }
+
+    @keyframes blink {
+      50% { opacity: .6; }
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .stat-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── CHART ── */
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .chart-card canvas { max-height: 280px; }
+
+    /* ── FEED TABLE ── */
+    .feed-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(30,45,61,.5);
+      transition: background .15s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,.02); }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 12px 14px;
+      color: var(--text);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+
+    .pill.dry    { background: rgba(0,229,255,.1); color: var(--accent-dry); }
+    .pill.ewaste { background: rgba(255,107,53,.1); color: var(--accent-ewaste); }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 24px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    footer span { color: var(--accent-dry); }
+
+    /* ── REFRESH BAR ── */
+    #refresh-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--border);
+      z-index: 100;
+    }
+
+    #refresh-progress {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--accent-dry), var(--accent-ewaste));
+      transform-origin: left;
+      animation: shrink 15s linear infinite;
+    }
+
+    @keyframes shrink {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      header { padding: 14px 16px; }
+      .header-meta .ts-id { display: none; }
+      main { padding: 20px 14px; }
+      .gauge-card { padding: 20px; }
+    }
   </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header>
-  🚮 IoT Waste Segregation & Monitoring Dashboard
+  <div class="logo">
+    <div class="logo-icon">♻️</div>
+    <div class="logo-text">Waste<span>IQ</span></div>
+  </div>
+  <div class="header-meta">
+    <span class="ts-id">CH# 3339508</span>
+    <span id="last-updated">Connecting...</span>
+    <span class="live-dot">LIVE</span>
+  </div>
 </header>
 
-<div class="container">
+<!-- ALERT BANNER -->
+<div id="alert-banner">⚠️ &nbsp;<span id="alert-text"></span></div>
 
-  <!-- Cards -->
-  <div class="cards">
-    <div class="card">
-      <h2>Dry Waste Bin</h2>
-      <div id="dry" class="value"></div>
-    </div>
+<main>
 
-    <div class="card">
-      <h2>E-Waste Bin</h2>
-      <div id="ewaste" class="value"></div>
+  <!-- GAUGES -->
+  <div>
+    <div class="section-label">Bin Fill Levels</div>
+    <div class="gauge-grid">
+
+      <!-- Dry Waste Gauge -->
+      <div class="gauge-card dry" id="card-dry">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Dry Waste Bin</div>
+          </div>
+          <div class="card-icon">🗑️</div>
+        </div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" width="200" height="120" viewBox="0 0 200 120">
+            <path class="gauge-track" d="M 20 110 A 80 80 0 0 1 180 110" stroke-width="14"/>
+            <path class="gauge-fill" id="arc-dry" d="M 20 110 A 80 80 0 0 1 180 110"
+              stroke="var(--accent-dry)" stroke-width="14"
+              stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <text class="gauge-value" id="val-dry" x="100" y="98" fill="var(--accent-dry)">—</text>
+            <text class="gauge-unit" x="100" y="116">PERCENT FULL</text>
+          </svg>
+          <span class="status-badge ok" id="badge-dry">● LOADING</span>
+        </div>
+      </div>
+
+      <!-- E-Waste Gauge -->
+      <div class="gauge-card ewaste" id="card-ewaste">
+        <div class="card-header">
+          <div>
+            <div class="card-title">E-Waste Bin</div>
+          </div>
+          <div class="card-icon">🔌</div>
+        </div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" width="200" height="120" viewBox="0 0 200 120">
+            <path class="gauge-track" d="M 20 110 A 80 80 0 0 1 180 110" stroke-width="14"/>
+            <path class="gauge-fill" id="arc-ewaste" d="M 20 110 A 80 80 0 0 1 180 110"
+              stroke="var(--accent-ewaste)" stroke-width="14"
+              stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <text class="gauge-value" id="val-ewaste" x="100" y="98" fill="var(--accent-ewaste)">—</text>
+            <text class="gauge-unit" x="100" y="116">PERCENT FULL</text>
+          </svg>
+          <span class="status-badge ok" id="badge-ewaste">● LOADING</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Charts -->
-  <div class="charts">
-    <canvas id="dryChart"></canvas>
-    <canvas id="ewasteChart"></canvas>
+  <!-- STATS ROW -->
+  <div>
+    <div class="section-label">Session Stats</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Readings Taken</div>
+        <div class="stat-value" id="stat-readings" style="color:var(--accent-dry)">0</div>
+        <div class="stat-sub">this session</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Dry Fill</div>
+        <div class="stat-value" id="stat-avg-dry" style="color:var(--accent-dry)">—%</div>
+        <div class="stat-sub">last 10 readings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg E-Waste Fill</div>
+        <div class="stat-value" id="stat-avg-e" style="color:var(--accent-ewaste)">—%</div>
+        <div class="stat-sub">last 10 readings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Bins at Capacity</div>
+        <div class="stat-value" id="stat-full" style="color:var(--danger)">0</div>
+        <div class="stat-sub">need emptying</div>
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- TREND CHART -->
+  <div>
+    <div class="section-label">Fill Trend — Last 10 Readings</div>
+    <div class="chart-card">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <!-- LIVE FEED TABLE -->
+  <div>
+    <div class="section-label">Reading Log</div>
+    <div class="feed-card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Dry Bin</th>
+            <th>E-Waste Bin</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="log-body">
+          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">Awaiting data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  WasteIQ &nbsp;·&nbsp; ESP32 Smart Waste System &nbsp;·&nbsp;
+  Group 04, Batch A1 &nbsp;·&nbsp; NMAMIT &nbsp;·&nbsp;
+  ThingSpeak Channel <span>3339508</span>
+</footer>
+
+<div id="refresh-bar"><div id="refresh-progress"></div></div>
 
 <script>
-let dryData = [];
-let ewasteData = [];
-let labels = [];
+  // ─────────────────────────────────────────────
+  //  CONFIG
+  // ─────────────────────────────────────────────
+  const CHANNEL = "3339508";
+  const API_URL = `https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=10`;
+  const REFRESH_MS = 15000;
 
-const dryChart = new Chart(document.getElementById("dryChart"), {
-  type: "line",
-  data: {
-    labels: labels,
-    datasets: [{
-      label: "Dry Bin (%)",
-      data: dryData,
-      borderColor: "#3b82f6",
-      tension: 0.4
-    }]
+  // ─────────────────────────────────────────────
+  //  STATE
+  // ─────────────────────────────────────────────
+  let dryHistory   = [];
+  let eHistory     = [];
+  let labels       = [];
+  let readingCount = 0;
+  let logRows      = [];
+
+  // ─────────────────────────────────────────────
+  //  CHART SETUP
+  // ─────────────────────────────────────────────
+  const ctx = document.getElementById("trendChart").getContext("2d");
+  const trendChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Dry Waste (%)",
+          data: dryHistory,
+          borderColor: "#00e5ff",
+          backgroundColor: "rgba(0,229,255,.06)",
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "#00e5ff",
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: "E-Waste (%)",
+          data: eHistory,
+          borderColor: "#ff6b35",
+          backgroundColor: "rgba(255,107,53,.06)",
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: "#ff6b35",
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 600, easing: "easeInOutQuart" },
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#94a3b8",
+            font: { family: "'Share Tech Mono', monospace", size: 12 }
+          }
+        },
+        tooltip: {
+          backgroundColor: "#111820",
+          borderColor: "#1e2d3d",
+          borderWidth: 1,
+          titleColor: "#e2e8f0",
+          bodyColor: "#94a3b8",
+          titleFont: { family: "'Share Tech Mono', monospace" },
+          bodyFont:  { family: "'Share Tech Mono', monospace" },
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#64748b", font: { family: "'Share Tech Mono', monospace", size: 10 } },
+          grid: { color: "rgba(30,45,61,.6)" }
+        },
+        y: {
+          min: 0, max: 100,
+          ticks: {
+            color: "#64748b",
+            font: { family: "'Share Tech Mono', monospace", size: 10 },
+            callback: v => v + "%"
+          },
+          grid: { color: "rgba(30,45,61,.6)" }
+        }
+      }
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  //  GAUGE ARC HELPER
+  // ─────────────────────────────────────────────
+  function setArc(id, pct) {
+    // arc total length = 251.2 (π × diameter = π × 80 × 2 × 0.5 arc)
+    const total = 251.2;
+    const offset = total - (total * Math.min(pct, 100) / 100);
+    document.getElementById(id).style.strokeDashoffset = offset;
   }
-});
 
-const ewasteChart = new Chart(document.getElementById("ewasteChart"), {
-  type: "line",
-  data: {
-    labels: labels,
-    datasets: [{
-      label: "E-Waste Bin (%)",
-      data: ewasteData,
-      borderColor: "#f97316",
-      tension: 0.4
-    }]
-  }
-});
-
-async function getData() {
-  let res = await fetch("https://api.thingspeak.com/channels/3339508/feeds/last.json");
-  let data = await res.json();
-
-  let dry = parseFloat(data.field1);
-  let ewaste = parseFloat(data.field2);
-
-  document.getElementById("dry").innerHTML =
-    dry.toFixed(1) + "% " + (dry > 80 ? "<span class='full'>● FULL</span>" : "<span class='ok'>● OK</span>");
-
-  document.getElementById("ewaste").innerHTML =
-    ewaste.toFixed(1) + "% " + (ewaste > 80 ? "<span class='full'>● FULL</span>" : "<span class='ok'>● OK</span>");
-
-  let time = new Date().toLocaleTimeString();
-
-  labels.push(time);
-  dryData.push(dry);
-  ewasteData.push(ewaste);
-
-  if (labels.length > 10) {
-    labels.shift();
-    dryData.shift();
-    ewasteData.shift();
+  // ─────────────────────────────────────────────
+  //  BADGE HELPER
+  // ─────────────────────────────────────────────
+  function setBadge(el, pct) {
+    el.className = "status-badge";
+    if (pct >= 90)      { el.classList.add("danger"); el.textContent = "● CRITICAL"; }
+    else if (pct >= 80) { el.classList.add("danger"); el.textContent = "● FULL"; }
+    else if (pct >= 60) { el.classList.add("warn");   el.textContent = "● FILLING"; }
+    else                { el.classList.add("ok");     el.textContent = "● OK"; }
   }
 
-  dryChart.update();
-  ewasteChart.update();
-}
+  // ─────────────────────────────────────────────
+  //  ALERT BANNER
+  // ─────────────────────────────────────────────
+  function updateAlert(dry, ewaste) {
+    const banner = document.getElementById("alert-banner");
+    const msgs = [];
+    if (dry    >= 80) msgs.push(`Dry Waste Bin is ${dry.toFixed(0)}% full — please empty!`);
+    if (ewaste >= 80) msgs.push(`E-Waste Bin is ${ewaste.toFixed(0)}% full — please empty!`);
+    if (msgs.length) {
+      document.getElementById("alert-text").textContent = msgs.join("  |  ");
+      banner.classList.add("visible");
+    } else {
+      banner.classList.remove("visible");
+    }
+  }
 
-setInterval(getData, 5000);
-getData();
-</script>
+  // ─────────────────────────────────────────────
+  //  LOG TABLE
+  // ─────────────────────────────────────────────
+  function addLogRow(dry, ewaste, time) {
+    const status = (dry >= 80 || ewaste >= 80) ? "⚠️ Alert" : "✅ Normal";
+    logRows.unshift({ dry, ewaste, time, status });
+    if (logRows.length > 20) logRows.pop();
 
-</body>
-</html>
+    const tbody = document.getElementById("log-body");
+    tbody.innerHTML = logRows.map((r, i) => `
+      <tr>
+        <td style="color:var(--muted)">${logRows.length - i}</td>
+        <td>${r.time}</td>
+        <td style="color:var(--accent-dry)">${r.dry.toFixed(1)}%</td>
+        <td style="color:var(--accent-ewaste)">${r.ewaste.toFixed(1)}%</td>
+        <td>${r.status}</td>
+      </tr>
+    `).join("");
+  }
+
+  // ─────────────────────────────────────────────
+  //  STATS
+  // ─────────────────────────────────────────────
+  function updateStats(dry, ewaste) {
+    readingCount++;
+    document.getElementById("stat-readings").textContent = readingCount;
+
+    const avgDry = dryHistory.reduce((a,b) => a+b, 0) / dryHistory.length;
+    const avgE   = eHistory.reduce((a,b) => a+b, 0)   / eHistory.length;
+    document.getElementById("stat-avg-dry").textContent = avgDry.toFixed(1) + "%";
+    document.getElementById("stat-avg-e").textContent   = avgE.toFixed(1) + "%";
