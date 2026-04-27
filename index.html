@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WasteIQ Smart Dashboard</title>
+<title>WasteIQ Smart Waste System</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,153 +12,165 @@
 body{
   margin:0;
   font-family:'Poppins',sans-serif;
-  background:linear-gradient(135deg,#0f172a,#020617);
+  background:#0f172a;
   color:white;
 }
 
-/* HEADER */
-header{
+/* NAVBAR */
+nav{
   display:flex;
   justify-content:space-between;
-  padding:20px 40px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  padding:15px 40px;
+  background:#020617;
+  position:sticky;
+  top:0;
 }
-.logo{font-size:24px;font-weight:700;}
-.logo span{color:#22c55e;}
-.time{font-size:14px;color:#94a3b8;}
+nav a{color:white;margin-left:20px;text-decoration:none;}
+nav a:hover{color:#22c55e;}
 
-/* MAIN */
-main{padding:30px;max-width:1200px;margin:auto;}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:25px;
-}
-
-/* CARD */
-.card{
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(12px);
-  border-radius:20px;
-  padding:25px;
+/* HERO */
+.hero{
+  height:90vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
   text-align:center;
-  border:1px solid rgba(255,255,255,0.1);
-  transition:.3s;
+  background:linear-gradient(135deg,#22c55e,#0ea5e9);
 }
-.card:hover{transform:translateY(-6px);}
-
-.value{
-  font-size:48px;
-  font-weight:700;
-  margin-top:10px;
-}
-
-.badge{
-  margin-top:10px;
-  padding:6px 14px;
-  border-radius:20px;
-  display:inline-block;
-}
-
-.ok{background:#22c55e20;color:#22c55e;}
-.warn{background:#f59e0b20;color:#f59e0b;}
-.danger{background:#ef444420;color:#ef4444;}
-
-/* ALERT */
-#alert{
-  margin-bottom:20px;
-  padding:12px;
+.hero h1{font-size:40px;}
+.hero button{
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
   border-radius:10px;
-  display:none;
-  background:#ef444420;
-  color:#ef4444;
-  text-align:center;
-}
-#alert.show{display:block;}
-
-/* CHART */
-canvas{
-  margin-top:30px;
   background:white;
-  border-radius:15px;
-  padding:10px;
+  color:#22c55e;
+  cursor:pointer;
 }
 
-/* TABLE */
-table{
-  width:100%;
-  margin-top:30px;
-  border-collapse:collapse;
+/* SECTIONS */
+section{padding:60px 40px;text-align:center;}
+.cards{
+  display:flex;
+  gap:20px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
-th,td{
-  padding:10px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-  text-align:center;
+.card{
+  background:#020617;
+  padding:20px;
+  border-radius:15px;
+  width:250px;
 }
-th{color:#94a3b8;font-size:12px;}
+
+/* DASHBOARD */
+.dashboard{
+  background:#020617;
+}
+.value{
+  font-size:40px;
+  font-weight:bold;
+}
+.ok{color:#22c55e;}
+.warn{color:#f59e0b;}
+.danger{color:#ef4444;}
+
+canvas{
+  background:white;
+  border-radius:10px;
+  margin-top:20px;
+}
+
+/* FOOTER */
+footer{
+  padding:20px;
+  background:#020617;
+}
 
 </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">Waste<span>IQ</span></div>
-  <div class="time" id="time">Connecting...</div>
-</header>
-
-<main>
-
-<div id="alert"></div>
-
-<div class="grid">
-  <div class="card">
-    <h3>Dry Waste</h3>
-    <div id="dry" class="value">--</div>
-    <div id="dryStatus" class="badge ok">Loading</div>
+<!-- NAV -->
+<nav>
+  <h2>WasteIQ</h2>
+  <div>
+    <a href="#home">Home</a>
+    <a href="#features">Features</a>
+    <a href="#dashboard">Dashboard</a>
   </div>
+</nav>
 
-  <div class="card">
-    <h3>E-Waste</h3>
-    <div id="ewaste" class="value">--</div>
-    <div id="eStatus" class="badge ok">Loading</div>
-  </div>
+<!-- HERO -->
+<div class="hero" id="home">
+  <h1>Smart Waste Monitoring System</h1>
+  <p>IoT based garbage level tracking using ESP32</p>
+  <button onclick="document.getElementById('dashboard').scrollIntoView()">View Dashboard</button>
 </div>
 
-<canvas id="chart"></canvas>
+<!-- FEATURES -->
+<section id="features">
+  <h2>Features</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Real-Time Data</h3>
+      <p>Live monitoring using sensors</p>
+    </div>
+    <div class="card">
+      <h3>Smart Alerts</h3>
+      <p>Get notified when bins are full</p>
+    </div>
+    <div class="card">
+      <h3>Cloud Storage</h3>
+      <p>Data stored on ThingSpeak</p>
+    </div>
+  </div>
+</section>
 
-<table>
-<thead>
-<tr>
-<th>#</th><th>Time</th><th>Dry</th><th>E-Waste</th><th>Status</th>
-</tr>
-</thead>
-<tbody id="log"></tbody>
-</table>
+<!-- DASHBOARD -->
+<section id="dashboard" class="dashboard">
+  <h2>Live Dashboard</h2>
 
-</main>
+  <div class="cards">
+    <div class="card">
+      <h3>Dry Waste</h3>
+      <div id="dry" class="value">--</div>
+      <div id="dStatus"></div>
+    </div>
+
+    <div class="card">
+      <h3>E-Waste</h3>
+      <div id="ewaste" class="value">--</div>
+      <div id="eStatus"></div>
+    </div>
+  </div>
+
+  <canvas id="chart"></canvas>
+</section>
+
+<footer>
+  © 2026 WasteIQ Project
+</footer>
 
 <script>
 const API="https://api.thingspeak.com/channels/3339508/feeds.json?results=10";
 
-let dryArr=[], eArr=[], labels=[], logs=[];
+let dArr=[], eArr=[], labels=[];
 
 const chart=new Chart(document.getElementById("chart"),{
 type:"line",
 data:{labels:labels,datasets:[
-{label:"Dry",data:dryArr,borderColor:"#22c55e",tension:.4},
-{label:"E-Waste",data:eArr,borderColor:"#f97316",tension:.4}
+{label:"Dry",data:dArr,borderColor:"#22c55e"},
+{label:"E-Waste",data:eArr,borderColor:"#f97316"}
 ]}
 });
 
 function status(val,el){
-  el.className="badge";
-  if(val>=80){el.classList.add("danger");el.innerText="FULL";}
-  else if(val>=60){el.classList.add("warn");el.innerText="FILLING";}
-  else{el.classList.add("ok");el.innerText="OK";}
+  if(val>=80){el.innerHTML="<span class='danger'>FULL</span>";}
+  else if(val>=60){el.innerHTML="<span class='warn'>FILLING</span>";}
+  else{el.innerHTML="<span class='ok'>OK</span>";}
 }
 
 async function load(){
@@ -169,39 +181,15 @@ async function load(){
   let d=parseFloat(last.field1);
   let e=parseFloat(last.field2);
 
-  document.getElementById("dry").innerText=d.toFixed(0)+"%";
-  document.getElementById("ewaste").innerText=e.toFixed(0)+"%";
+  dry.innerText=d+"%";
+  ewaste.innerText=e+"%";
 
-  status(d,dryStatus);
+  status(d,dStatus);
   status(e,eStatus);
 
-  document.getElementById("time").innerText=new Date().toLocaleTimeString();
-
-  // alert
-  let msg="";
-  if(d>=80)msg+="Dry Full ";
-  if(e>=80)msg+="E-Waste Full";
-  const a=document.getElementById("alert");
-  if(msg){a.innerText=msg;a.classList.add("show");}
-  else a.classList.remove("show");
-
-  // chart
-  dryArr.push(d); eArr.push(e); labels.push(new Date().toLocaleTimeString());
-  if(dryArr.length>10){dryArr.shift();eArr.shift();labels.shift();}
+  dArr.push(d); eArr.push(e); labels.push(new Date().toLocaleTimeString());
+  if(dArr.length>10){dArr.shift();eArr.shift();labels.shift();}
   chart.update();
-
-  // log
-  logs.unshift({d,e,t:new Date().toLocaleTimeString()});
-  if(logs.length>10)logs.pop();
-
-  log.innerHTML=logs.map((r,i)=>`
-  <tr>
-    <td>${logs.length-i}</td>
-    <td>${r.t}</td>
-    <td>${r.d}%</td>
-    <td>${r.e}%</td>
-    <td>${(r.d>=80||r.e>=80)?"⚠️":"OK"}</td>
-  </tr>`).join("");
 }
 
 setInterval(load,15000);
