@@ -9,155 +9,122 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:'Poppins',sans-serif;
-  background:#0f172a;
-  color:white;
-}
+body{margin:0;font-family:'Poppins';background:#0f172a;color:white}
 
-/* NAVBAR */
-nav{
-  display:flex;
-  justify-content:space-between;
-  padding:15px 40px;
-  background:#020617;
-  position:sticky;
-  top:0;
-}
-nav a{color:white;margin-left:20px;text-decoration:none;}
-nav a:hover{color:#22c55e;}
+/* NAV */
+nav{display:flex;justify-content:space-between;padding:15px 40px;background:#020617;position:sticky;top:0}
+nav a{color:white;margin-left:20px;text-decoration:none}
 
 /* HERO */
 .hero{
-  height:90vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  background:linear-gradient(135deg,#22c55e,#0ea5e9);
+height:90vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+background:linear-gradient(135deg,#22c55e,#0ea5e9);text-align:center;
 }
-.hero h1{font-size:40px;}
-.hero button{
-  margin-top:20px;
-  padding:10px 20px;
-  border:none;
-  border-radius:10px;
-  background:white;
-  color:#22c55e;
-  cursor:pointer;
-}
+.hero button{padding:10px 20px;border:none;border-radius:10px;background:white;color:#22c55e}
 
 /* SECTIONS */
-section{padding:60px 40px;text-align:center;}
-.cards{
-  display:flex;
-  gap:20px;
-  justify-content:center;
-  flex-wrap:wrap;
-}
-.card{
-  background:#020617;
-  padding:20px;
-  border-radius:15px;
-  width:250px;
-}
+section{padding:60px 40px;text-align:center}
+.cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.card{background:#020617;padding:20px;border-radius:15px;width:250px}
 
 /* DASHBOARD */
-.dashboard{
-  background:#020617;
-}
-.value{
-  font-size:40px;
-  font-weight:bold;
-}
-.ok{color:#22c55e;}
-.warn{color:#f59e0b;}
-.danger{color:#ef4444;}
+.value{font-size:40px;font-weight:bold}
+.ok{color:#22c55e}.warn{color:#f59e0b}.danger{color:#ef4444}
 
-canvas{
-  background:white;
-  border-radius:10px;
-  margin-top:20px;
+canvas{background:white;border-radius:10px;margin-top:20px}
+
+/* ACTIVITIES */
+.table{
+width:100%;margin-top:30px;border-collapse:collapse;
 }
+.table th,.table td{
+padding:10px;border-bottom:1px solid #1e293b;text-align:center;
+}
+.table th{color:#94a3b8}
 
 /* FOOTER */
-footer{
-  padding:20px;
-  background:#020617;
-}
+footer{padding:20px;background:#020617}
 
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
 <nav>
-  <h2>WasteIQ</h2>
-  <div>
-    <a href="#home">Home</a>
-    <a href="#features">Features</a>
-    <a href="#dashboard">Dashboard</a>
-  </div>
+<h2>WasteIQ</h2>
+<div>
+<a href="#home">Home</a>
+<a href="#features">Features</a>
+<a href="#dashboard">Dashboard</a>
+<a href="#activity">Activity</a>
+</div>
 </nav>
 
-<!-- HERO -->
 <div class="hero" id="home">
-  <h1>Smart Waste Monitoring System</h1>
-  <p>IoT based garbage level tracking using ESP32</p>
-  <button onclick="document.getElementById('dashboard').scrollIntoView()">View Dashboard</button>
+<h1>Smart Waste Monitoring System</h1>
+<p>Real-time IoT waste tracking</p>
+<button onclick="document.getElementById('dashboard').scrollIntoView()">View Dashboard</button>
 </div>
 
-<!-- FEATURES -->
 <section id="features">
-  <h2>Features</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Real-Time Data</h3>
-      <p>Live monitoring using sensors</p>
-    </div>
-    <div class="card">
-      <h3>Smart Alerts</h3>
-      <p>Get notified when bins are full</p>
-    </div>
-    <div class="card">
-      <h3>Cloud Storage</h3>
-      <p>Data stored on ThingSpeak</p>
-    </div>
-  </div>
+<h2>Features</h2>
+<div class="cards">
+<div class="card"><h3>Live Data</h3></div>
+<div class="card"><h3>Alerts</h3></div>
+<div class="card"><h3>Cloud Storage</h3></div>
+</div>
 </section>
 
-<!-- DASHBOARD -->
-<section id="dashboard" class="dashboard">
-  <h2>Live Dashboard</h2>
+<section id="dashboard">
+<h2>Live Dashboard</h2>
 
-  <div class="cards">
-    <div class="card">
-      <h3>Dry Waste</h3>
-      <div id="dry" class="value">--</div>
-      <div id="dStatus"></div>
-    </div>
+<div class="cards">
+<div class="card">
+<h3>Dry Waste</h3>
+<div id="dry" class="value">--</div>
+<div id="dStatus"></div>
+</div>
 
-    <div class="card">
-      <h3>E-Waste</h3>
-      <div id="ewaste" class="value">--</div>
-      <div id="eStatus"></div>
-    </div>
-  </div>
+<div class="card">
+<h3>E-Waste</h3>
+<div id="ewaste" class="value">--</div>
+<div id="eStatus"></div>
+</div>
+</div>
 
-  <canvas id="chart"></canvas>
+<canvas id="chart"></canvas>
+</section>
+
+<!-- 🔥 NEW SECTION -->
+<section id="activity">
+<h2>Recent Activities</h2>
+
+<table class="table">
+<thead>
+<tr>
+<th>#</th>
+<th>Time</th>
+<th>Dry (%)</th>
+<th>E-Waste (%)</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="log">
+<tr><td colspan="5">Waiting for data...</td></tr>
+</tbody>
+
+</table>
 </section>
 
 <footer>
-  © 2026 WasteIQ Project
+© 2026 WasteIQ Project
 </footer>
 
 <script>
 const API="https://api.thingspeak.com/channels/3339508/feeds.json?results=10";
 
-let dArr=[], eArr=[], labels=[];
+let dArr=[], eArr=[], labels=[], logs=[];
 
 const chart=new Chart(document.getElementById("chart"),{
 type:"line",
@@ -168,28 +135,45 @@ data:{labels:labels,datasets:[
 });
 
 function status(val,el){
-  if(val>=80){el.innerHTML="<span class='danger'>FULL</span>";}
-  else if(val>=60){el.innerHTML="<span class='warn'>FILLING</span>";}
-  else{el.innerHTML="<span class='ok'>OK</span>";}
+if(val>=80){el.innerHTML="<span class='danger'>FULL</span>"}
+else if(val>=60){el.innerHTML="<span class='warn'>FILLING</span>"}
+else{el.innerHTML="<span class='ok'>OK</span>"}
 }
 
 async function load(){
-  const res=await fetch(API);
-  const data=await res.json();
-  const last=data.feeds[data.feeds.length-1];
+const res=await fetch(API);
+const data=await res.json();
+const last=data.feeds[data.feeds.length-1];
 
-  let d=parseFloat(last.field1);
-  let e=parseFloat(last.field2);
+let d=parseFloat(last.field1);
+let e=parseFloat(last.field2);
 
-  dry.innerText=d+"%";
-  ewaste.innerText=e+"%";
+dry.innerText=d+"%";
+ewaste.innerText=e+"%";
 
-  status(d,dStatus);
-  status(e,eStatus);
+status(d,dStatus);
+status(e,eStatus);
 
-  dArr.push(d); eArr.push(e); labels.push(new Date().toLocaleTimeString());
-  if(dArr.length>10){dArr.shift();eArr.shift();labels.shift();}
-  chart.update();
+/* chart */
+dArr.push(d); eArr.push(e);
+labels.push(new Date().toLocaleTimeString());
+if(dArr.length>10){dArr.shift();eArr.shift();labels.shift();}
+chart.update();
+
+/* activity log */
+logs.unshift({d,e,time:new Date().toLocaleTimeString()});
+if(logs.length>10)logs.pop();
+
+log.innerHTML=logs.map((r,i)=>`
+<tr>
+<td>${logs.length-i}</td>
+<td>${r.time}</td>
+<td>${r.d}%</td>
+<td>${r.e}%</td>
+<td>${(r.d>=80||r.e>=80)?"⚠️ Alert":"Normal"}</td>
+</tr>
+`).join("");
+
 }
 
 setInterval(load,15000);
