@@ -1,60 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>WasteIQ — Smart Waste Monitor</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WasteIQ Smart Dashboard</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {
-  --bg:#080c10;--card:#111820;--border:#1e2d3d;
-  --accent-dry:#00e5ff;--accent-ewaste:#ff6b35;
-  --ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;
-  --text:#e2e8f0;--muted:#64748b;
-  --mono:'Share Tech Mono',monospace;--sans:'Syne',sans-serif;
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f172a,#020617);
+  color:white;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);}
 
 /* HEADER */
 header{
-  display:flex;justify-content:space-between;
-  padding:18px 30px;background:#0d1117;
-  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  padding:20px 40px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
-.logo{font-weight:800;font-size:22px;}
-.logo span{color:var(--accent-dry);}
-.live{color:var(--ok);font-family:var(--mono);}
-
-/* ALERT */
-#alert{display:none;padding:10px;background:#330000;color:#ff6b6b;text-align:center;}
-#alert.show{display:block;}
+.logo{font-size:24px;font-weight:700;}
+.logo span{color:#22c55e;}
+.time{font-size:14px;color:#94a3b8;}
 
 /* MAIN */
-main{padding:20px;max-width:1100px;margin:auto;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+main{padding:30px;max-width:1200px;margin:auto;}
 
-.card{
-  background:var(--card);padding:20px;border-radius:15px;
-  border:1px solid var(--border);text-align:center;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:25px;
 }
-.value{font-size:40px;font-weight:bold;}
-.badge{margin-top:10px;padding:5px 10px;border-radius:20px;font-family:var(--mono);}
 
-.ok{color:var(--ok);}
-.warn{color:var(--warn);}
-.danger{color:var(--danger);}
+/* CARD */
+.card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(12px);
+  border-radius:20px;
+  padding:25px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.1);
+  transition:.3s;
+}
+.card:hover{transform:translateY(-6px);}
+
+.value{
+  font-size:48px;
+  font-weight:700;
+  margin-top:10px;
+}
+
+.badge{
+  margin-top:10px;
+  padding:6px 14px;
+  border-radius:20px;
+  display:inline-block;
+}
+
+.ok{background:#22c55e20;color:#22c55e;}
+.warn{background:#f59e0b20;color:#f59e0b;}
+.danger{background:#ef444420;color:#ef4444;}
+
+/* ALERT */
+#alert{
+  margin-bottom:20px;
+  padding:12px;
+  border-radius:10px;
+  display:none;
+  background:#ef444420;
+  color:#ef4444;
+  text-align:center;
+}
+#alert.show{display:block;}
 
 /* CHART */
-canvas{background:#fff;border-radius:10px;margin-top:20px;}
+canvas{
+  margin-top:30px;
+  background:white;
+  border-radius:15px;
+  padding:10px;
+}
 
 /* TABLE */
-table{width:100%;margin-top:20px;border-collapse:collapse;font-family:var(--mono);}
-th,td{padding:10px;border-bottom:1px solid var(--border);}
-th{color:var(--muted);font-size:12px;}
+table{
+  width:100%;
+  margin-top:30px;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  text-align:center;
+}
+th{color:#94a3b8;font-size:12px;}
 
 </style>
 </head>
@@ -63,27 +107,25 @@ th{color:var(--muted);font-size:12px;}
 
 <header>
   <div class="logo">Waste<span>IQ</span></div>
-  <div class="live" id="time">Connecting...</div>
+  <div class="time" id="time">Connecting...</div>
 </header>
-
-<div id="alert"></div>
 
 <main>
 
+<div id="alert"></div>
+
 <div class="grid">
+  <div class="card">
+    <h3>Dry Waste</h3>
+    <div id="dry" class="value">--</div>
+    <div id="dryStatus" class="badge ok">Loading</div>
+  </div>
 
-<div class="card">
-  <h3>Dry Waste</h3>
-  <div id="dryVal" class="value">--</div>
-  <div id="dryBadge" class="badge ok">Loading</div>
-</div>
-
-<div class="card">
-  <h3>E-Waste</h3>
-  <div id="eVal" class="value">--</div>
-  <div id="eBadge" class="badge ok">Loading</div>
-</div>
-
+  <div class="card">
+    <h3>E-Waste</h3>
+    <div id="ewaste" class="value">--</div>
+    <div id="eStatus" class="badge ok">Loading</div>
+  </div>
 </div>
 
 <canvas id="chart"></canvas>
@@ -102,76 +144,68 @@ th{color:var(--muted);font-size:12px;}
 <script>
 const API="https://api.thingspeak.com/channels/3339508/feeds.json?results=10";
 
-let dryData=[], eData=[], labels=[], count=0, logs=[];
+let dryArr=[], eArr=[], labels=[], logs=[];
 
 const chart=new Chart(document.getElementById("chart"),{
 type:"line",
 data:{labels:labels,datasets:[
-{label:"Dry",data:dryData,borderColor:"#00e5ff",tension:.4},
-{label:"E-Waste",data:eData,borderColor:"#ff6b35",tension:.4}
+{label:"Dry",data:dryArr,borderColor:"#22c55e",tension:.4},
+{label:"E-Waste",data:eArr,borderColor:"#f97316",tension:.4}
 ]}
 });
 
-function setStatus(val,el){
+function status(val,el){
   el.className="badge";
   if(val>=80){el.classList.add("danger");el.innerText="FULL";}
   else if(val>=60){el.classList.add("warn");el.innerText="FILLING";}
   else{el.classList.add("ok");el.innerText="OK";}
 }
 
-async function fetchData(){
+async function load(){
   const res=await fetch(API);
   const data=await res.json();
-  const feeds=data.feeds;
-  if(!feeds.length)return;
+  const last=data.feeds[data.feeds.length-1];
 
-  const d=parseFloat(feeds[feeds.length-1].field1);
-  const e=parseFloat(feeds[feeds.length-1].field2);
+  let d=parseFloat(last.field1);
+  let e=parseFloat(last.field2);
 
-  if(isNaN(d)||isNaN(e))return;
+  document.getElementById("dry").innerText=d.toFixed(0)+"%";
+  document.getElementById("ewaste").innerText=e.toFixed(0)+"%";
 
-  document.getElementById("dryVal").innerText=d.toFixed(0)+"%";
-  document.getElementById("eVal").innerText=e.toFixed(0)+"%";
+  status(d,dryStatus);
+  status(e,eStatus);
 
-  setStatus(d,document.getElementById("dryBadge"));
-  setStatus(e,document.getElementById("eBadge"));
+  document.getElementById("time").innerText=new Date().toLocaleTimeString();
 
-  // ALERT
+  // alert
   let msg="";
   if(d>=80)msg+="Dry Full ";
   if(e>=80)msg+="E-Waste Full";
-  const alertBox=document.getElementById("alert");
-  if(msg){
-    alertBox.innerText=msg;
-    alertBox.classList.add("show");
-  }else alertBox.classList.remove("show");
+  const a=document.getElementById("alert");
+  if(msg){a.innerText=msg;a.classList.add("show");}
+  else a.classList.remove("show");
 
-  // TIME
-  document.getElementById("time").innerText=new Date().toLocaleTimeString();
-
-  // CHART
-  dryData.push(d); eData.push(e); labels.push(new Date().toLocaleTimeString());
-  if(dryData.length>10){dryData.shift();eData.shift();labels.shift();}
+  // chart
+  dryArr.push(d); eArr.push(e); labels.push(new Date().toLocaleTimeString());
+  if(dryArr.length>10){dryArr.shift();eArr.shift();labels.shift();}
   chart.update();
 
-  // LOG
-  logs.unshift({d,e,time:new Date().toLocaleTimeString()});
+  // log
+  logs.unshift({d,e,t:new Date().toLocaleTimeString()});
   if(logs.length>10)logs.pop();
 
-  document.getElementById("log").innerHTML=logs.map((r,i)=>`
-    <tr>
-      <td>${logs.length-i}</td>
-      <td>${r.time}</td>
-      <td>${r.d}%</td>
-      <td>${r.e}%</td>
-      <td>${(r.d>=80||r.e>=80)?"⚠️":"OK"}</td>
-    </tr>
-  `).join("");
-
+  log.innerHTML=logs.map((r,i)=>`
+  <tr>
+    <td>${logs.length-i}</td>
+    <td>${r.t}</td>
+    <td>${r.d}%</td>
+    <td>${r.e}%</td>
+    <td>${(r.d>=80||r.e>=80)?"⚠️":"OK"}</td>
+  </tr>`).join("");
 }
 
-setInterval(fetchData,15000);
-fetchData();
+setInterval(load,15000);
+load();
 </script>
 
 </body>
