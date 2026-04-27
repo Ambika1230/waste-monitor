@@ -4,7 +4,6 @@
   <title>Smart Waste Monitoring</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -16,9 +15,7 @@
       text-align: center;
     }
 
-    h1 {
-      margin-top: 20px;
-    }
+    h1 { margin-top: 20px; }
 
     .container {
       display: flex;
@@ -52,84 +49,65 @@
 
 <div class="container">
   <div class="card">
-    <h2>Wet Bin</h2>
-    <p id="wet"></p>
-  </div>
-
-  <div class="card">
-    <h2>Dry Bin</h2>
+    <h2>Dry Waste Bin</h2>
     <p id="dry"></p>
   </div>
 
   <div class="card">
-    <h2>Moisture</h2>
-    <p id="moisture"></p>
+    <h2>E-Waste Bin</h2>
+    <p id="ewaste"></p>
   </div>
 </div>
 
 <h2>📊 Live Data Charts</h2>
 
-<canvas id="wetChart" width="400" height="200"></canvas>
 <canvas id="dryChart" width="400" height="200"></canvas>
-<canvas id="moistChart" width="400" height="200"></canvas>
+<canvas id="ewasteChart" width="400" height="200"></canvas>
 
 <script>
-let wetData = [];
 let dryData = [];
-let moistData = [];
+let ewasteData = [];
 let labels = [];
-
-const wetChart = new Chart(document.getElementById("wetChart"), {
-  type: "line",
-  data: { labels: labels, datasets: [{ label: "Wet Bin", data: wetData, borderColor: "red" }] }
-});
 
 const dryChart = new Chart(document.getElementById("dryChart"), {
   type: "line",
-  data: { labels: labels, datasets: [{ label: "Dry Bin", data: dryData, borderColor: "blue" }] }
+  data: { labels: labels, datasets: [{ label: "Dry Bin (%)", data: dryData, borderColor: "blue" }] }
 });
 
-const moistChart = new Chart(document.getElementById("moistChart"), {
+const ewasteChart = new Chart(document.getElementById("ewasteChart"), {
   type: "line",
-  data: { labels: labels, datasets: [{ label: "Moisture", data: moistData, borderColor: "green" }] }
+  data: { labels: labels, datasets: [{ label: "E-Waste Bin (%)", data: ewasteData, borderColor: "orange" }] }
 });
 
 async function getData() {
   let res = await fetch("https://api.thingspeak.com/channels/3339508/feeds/last.json");
   let data = await res.json();
 
-  let wet = parseFloat(data.field1);
-  let dry = parseFloat(data.field2);
-  let moisture = parseFloat(data.field3);
+  let dry = parseFloat(data.field1);
+  let ewaste = parseFloat(data.field2);
 
-  // Update text
-  document.getElementById("wet").innerHTML =
-    wet + " cm " + (wet < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
-
+  // Update text (percentage-based)
   document.getElementById("dry").innerHTML =
-    dry + " cm " + (dry < 5 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
+    dry.toFixed(1) + "% " + (dry > 80 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
 
-  document.getElementById("moisture").innerHTML =
-    moisture + "% " + (moisture > 60 ? "<span class='full'>WET 💧</span>" : "<span class='ok'>DRY 🟡</span>");
+  document.getElementById("ewaste").innerHTML =
+    ewaste.toFixed(1) + "% " + (ewaste > 80 ? "<span class='full'>FULL 🚨</span>" : "<span class='ok'>OK ✅</span>");
 
   // Update charts
   let time = new Date().toLocaleTimeString();
 
   labels.push(time);
-  wetData.push(wet);
   dryData.push(dry);
-  moistData.push(moisture);
+  ewasteData.push(ewaste);
 
   if (labels.length > 10) {
     labels.shift();
-    wetData.shift();
     dryData.shift();
-    moistData.shift();
+    ewasteData.shift();
   }
 
-  wetChart.update();
   dryChart.update();
-  moistChart.update();
+  ewasteChart.update();
 }
 
 setInterval(getData, 5000);
