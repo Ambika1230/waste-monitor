@@ -6,215 +6,105 @@
   <title>WasteIQ — Smart Waste Monitor</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     :root {
-      --bg: #080c10;
-      --card: #111820;
-      --border: #1e2d3d;
-      --accent-dry: #00e5ff;
-      --accent-ewaste: #ff6b35;
-      --ok: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --mono: 'Share Tech Mono', monospace;
-      --sans: 'Syne', sans-serif;
+      --bg: #080c10; --card: #111820; --border: #1e2d3d;
+      --cyan: #00e5ff; --orange: #ff6b35;
+      --ok: #22c55e; --warn: #f59e0b; --danger: #ef4444;
+      --text: #e2e8f0; --muted: #64748b;
+      --mono: 'Share Tech Mono', monospace; --sans: 'Syne', sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
     body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none; z-index: 0;
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);
+      background-size: 40px 40px; pointer-events: none; z-index: 0;
     }
 
-    /* HEADER */
     header {
       position: relative; z-index: 10;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 32px;
-      background: rgba(13,17,23,.95);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
-      flex-wrap: wrap; gap: 12px;
+      padding: 18px 32px; background: rgba(13,17,23,.95);
+      border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
     }
     .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--accent-dry), #0070ff);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-    }
-    .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-    .logo-text span { color: var(--accent-dry); }
-    .header-meta {
-      display: flex; align-items: center; gap: 16px;
-      font-family: var(--mono); font-size: 12px; color: var(--muted);
-      flex-wrap: wrap;
-    }
-    .live-dot {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 10px;
-      background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.25);
-      border-radius: 20px; color: var(--ok); font-size: 11px;
-    }
-    .live-dot.error { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.25); color: var(--danger); }
-    .live-dot::before {
-      content: ''; width: 7px; height: 7px;
-      background: currentColor; border-radius: 50%;
-      animation: pulse 1.5s ease infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+    .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg,var(--cyan),#0070ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text { font-size: 22px; font-weight: 800; }
+    .logo-text span { color: var(--cyan); }
+    .header-right { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+    .dot { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 11px; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.25); color: var(--ok); }
+    .dot::before { content: ''; width: 7px; height: 7px; background: currentColor; border-radius: 50%; animation: pulse 1.5s infinite; }
+    .dot.err { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: var(--danger); }
+    @keyframes pulse { 50%{opacity:.3;transform:scale(.8)} }
 
-    /* CONFIG BANNER */
-    #config-banner {
+    /* DIAGNOSTICS BOX — always visible, shows status */
+    #diag {
       position: relative; z-index: 9;
-      background: linear-gradient(90deg, rgba(245,158,11,.1), rgba(245,158,11,.03));
-      border-bottom: 1px solid rgba(245,158,11,.25);
-      padding: 14px 32px;
-      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin: 16px 24px; border-radius: 12px; padding: 16px 20px;
+      font-family: var(--mono); font-size: 12px; line-height: 2;
+      background: rgba(0,229,255,.04); border: 1px solid rgba(0,229,255,.15);
     }
-    #config-banner label { font-family: var(--mono); font-size: 11px; color: var(--warn); letter-spacing: 1px; }
-    #config-banner input {
-      font-family: var(--mono); font-size: 13px;
-      background: rgba(0,0,0,.4); border: 1px solid rgba(245,158,11,.3);
-      color: var(--text); padding: 6px 12px; border-radius: 6px;
-      width: 190px; outline: none;
-    }
-    #config-banner input:focus { border-color: var(--warn); }
-    #config-banner button {
-      font-family: var(--mono); font-size: 12px; font-weight: 700;
-      background: var(--warn); color: #000;
-      border: none; padding: 7px 18px; border-radius: 6px;
-      cursor: pointer; letter-spacing: .5px; transition: opacity .2s;
-    }
-    #config-banner button:hover { opacity: .85; }
-    .config-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    #diag.error { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.25); }
+    #diag .diag-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--cyan); }
+    #diag.error .diag-title { color: var(--danger); }
+    #diag a { color: var(--cyan); }
 
-    /* ALERT BANNER */
     #alert-banner {
       display: none; position: relative; z-index: 9;
-      background: linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.05));
-      border-bottom: 1px solid rgba(239,68,68,.3);
-      padding: 10px 32px;
-      font-family: var(--mono); font-size: 13px; color: var(--danger);
+      background: rgba(239,68,68,.1); border-bottom: 1px solid rgba(239,68,68,.3);
+      padding: 10px 32px; font-family: var(--mono); font-size: 13px; color: var(--danger);
     }
-    #alert-banner.visible { display: block; }
+    #alert-banner.show { display: block; }
 
-    /* ERROR BOX */
-    #error-box {
-      display: none;
-      position: relative; z-index: 9;
-      margin: 16px 24px;
-      background: rgba(239,68,68,.06);
-      border: 1px solid rgba(239,68,68,.2);
-      border-radius: 10px; padding: 16px 20px;
-      font-family: var(--mono); font-size: 12px; color: #fca5a5;
-      white-space: pre-line; line-height: 1.9;
-    }
-    #error-box.visible { display: block; }
-    #error-box strong { color: var(--danger); display: block; margin-bottom: 6px; font-size: 13px; }
+    main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
 
-    /* MAIN */
-    main {
-      position: relative; z-index: 1;
-      max-width: 1200px; margin: 0 auto;
-      padding: 32px 24px;
-      display: flex; flex-direction: column; gap: 28px;
-    }
-    .section-label {
-      font-family: var(--mono); font-size: 11px;
-      color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 14px;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .slabel { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .slabel::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* GAUGES */
-    .gauge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .gauge-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px;
-      position: relative; overflow: hidden; transition: border-color .3s;
-    }
-    .gauge-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 2px; border-radius: 2px 2px 0 0;
-    }
-    .gauge-card.dry::before    { background: linear-gradient(90deg, var(--accent-dry), transparent); }
-    .gauge-card.ewaste::before { background: linear-gradient(90deg, var(--accent-ewaste), transparent); }
-    .gauge-card.alert-active   { border-color: rgba(239,68,68,.5); box-shadow: 0 0 30px rgba(239,68,68,.08); }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-    .card-title  { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-    .card-icon   { font-size: 26px; }
-    .gauge-wrap  { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    .gauge-svg   { overflow: visible; }
+    .gauge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px,1fr)); gap: 20px; }
+    .gauge-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; position: relative; overflow: hidden; transition: border-color .3s; }
+    .gauge-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .gauge-card.dry::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+    .gauge-card.ewaste::before { background: linear-gradient(90deg, var(--orange), transparent); }
+    .gauge-card.alert-active { border-color: rgba(239,68,68,.5); }
+    .chead { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .ctitle { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .gwrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .gauge-track { fill: none; stroke: rgba(255,255,255,.06); }
-    .gauge-fill  { fill: none; stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1); }
-    .gauge-value { font-size: 40px; font-weight: 800; font-family: var(--sans); text-anchor: middle; dominant-baseline: middle; }
-    .gauge-unit  { font-size: 13px; fill: var(--muted); text-anchor: middle; font-family: var(--mono); }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 14px; border-radius: 20px;
-      font-family: var(--mono); font-size: 12px; font-weight: 600; transition: .3s;
-    }
-    .status-badge.ok     { background: rgba(34,197,94,.12); color: var(--ok);    border: 1px solid rgba(34,197,94,.25); }
-    .status-badge.warn   { background: rgba(245,158,11,.12); color: var(--warn);  border: 1px solid rgba(245,158,11,.25); }
-    .status-badge.danger { background: rgba(239,68,68,.12);  color: var(--danger); border: 1px solid rgba(239,68,68,.25); animation: blink .8s ease infinite; }
-    .status-badge.idle   { background: rgba(100,116,139,.1); color: var(--muted); border: 1px solid rgba(100,116,139,.2); }
-    @keyframes blink { 50%{opacity:.6} }
+    .gauge-fill { fill: none; stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.4,0,.2,1); }
+    .gval { font-size: 38px; font-weight: 800; font-family: var(--sans); text-anchor: middle; dominant-baseline: middle; }
+    .gunit { font-size: 12px; fill: var(--muted); text-anchor: middle; font-family: var(--mono); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 20px; font-family: var(--mono); font-size: 12px; font-weight: 600; }
+    .badge.ok  { background: rgba(34,197,94,.12); color: var(--ok);    border: 1px solid rgba(34,197,94,.25); }
+    .badge.warn{ background: rgba(245,158,11,.12); color: var(--warn);  border: 1px solid rgba(245,158,11,.25); }
+    .badge.full{ background: rgba(239,68,68,.12);  color: var(--danger); border: 1px solid rgba(239,68,68,.3); animation: blink .8s infinite; }
+    .badge.idle{ background: rgba(100,116,139,.1); color: var(--muted); border: 1px solid rgba(100,116,139,.2); }
+    @keyframes blink { 50%{opacity:.5} }
 
-    /* STATS */
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
-    .stat-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 18px 20px;
-      display: flex; flex-direction: column; gap: 6px;
-    }
-    .stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-    .stat-value { font-size: 26px; font-weight: 800; }
-    .stat-sub   { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 14px; }
+    .scard { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .sl { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .sv { font-size: 24px; font-weight: 800; }
+    .ss { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-    /* CHART */
-    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
-    .chart-card canvas { max-height: 280px; }
+    .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .chart-card canvas { max-height: 260px; }
 
-    /* TABLE */
-    .feed-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
-    thead th { padding: 10px 14px; text-align: left; color: var(--muted); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-    tbody tr { border-bottom: 1px solid rgba(30,45,61,.5); transition: background .15s; }
-    tbody tr:hover { background: rgba(255,255,255,.02); }
-    tbody tr:last-child { border-bottom: none; }
-    tbody td { padding: 12px 14px; }
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+    th { padding: 9px 12px; text-align: left; color: var(--muted); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 11px 12px; border-bottom: 1px solid rgba(30,45,61,.4); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
 
-    /* FOOTER */
-    footer { position: relative; z-index: 1; text-align: center; padding: 24px; font-family: var(--mono); font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); }
-    footer span { color: var(--accent-dry); }
+    footer { position: relative; z-index: 1; text-align: center; padding: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); }
+    footer span { color: var(--cyan); }
 
-    /* PROGRESS BAR */
-    #refresh-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); z-index: 100; }
-    #refresh-progress { height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent-dry), var(--accent-ewaste)); transform-origin: left; }
+    #pbar { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); z-index: 100; }
+    #pfill { height: 100%; background: linear-gradient(90deg,var(--cyan),var(--orange)); transform-origin: left; }
 
-    @media (max-width: 600px) {
-      header { padding: 14px 16px; }
-      main { padding: 20px 14px; }
-      #config-banner { padding: 12px 16px; }
-      #config-banner input { width: 130px; }
-    }
+    @media(max-width:600px){ header{padding:14px 16px;} main{padding:16px 12px;} #diag{margin:12px;} }
   </style>
 </head>
 <body>
@@ -224,66 +114,57 @@
     <div class="logo-icon">♻️</div>
     <div class="logo-text">Waste<span>IQ</span></div>
   </div>
-  <div class="header-meta">
-    <span id="channel-display" style="color:var(--accent-dry)">CH# —</span>
-    <span id="last-updated">Not connected</span>
-    <span class="live-dot" id="live-dot">LIVE</span>
+  <div class="header-right">
+    <span style="color:var(--cyan)">CH# 3339508</span>
+    <span id="ts-updated">Connecting...</span>
+    <span class="dot" id="live-dot">LIVE</span>
   </div>
 </header>
 
-<!-- CONFIG PANEL -->
-<div id="config-banner">
-  <label>CHANNEL ID</label>
-  <input type="text" id="inp-channel" placeholder="e.g. 3339508" />
-  <label>READ API KEY</label>
-  <input type="text" id="inp-apikey" placeholder="Leave blank if public" />
-  <button onclick="applyConfig()">▶ Connect</button>
-  <span class="config-hint">ThingSpeak → My Channels → API Keys → Read API Key</span>
+<div id="alert-banner">⚠️ &nbsp;<span id="alert-txt"></span></div>
+
+<!-- DIAGNOSTICS — tells you exactly what is happening -->
+<div id="diag">
+  <div class="diag-title" id="diag-title">🔄 Connecting to ThingSpeak...</div>
+  <div id="diag-body">
+    Fetching: <a href="https://api.thingspeak.com/channels/3339508/feeds.json?results=10" target="_blank">https://api.thingspeak.com/channels/3339508/feeds.json</a><br>
+    ↳ Click the link above to check if your channel has data in a new tab.<br>
+    ↳ If you see JSON with feeds[] containing values → data exists, dashboard will load.<br>
+    ↳ If feeds[] is empty → your ESP32 has not sent data yet.
+  </div>
 </div>
-
-<div id="alert-banner">⚠️ &nbsp;<span id="alert-text"></span></div>
-
-<div id="error-box"><strong>⚠ Connection Problem</strong><span id="error-detail"></span></div>
 
 <main>
 
   <div>
-    <div class="section-label">Bin Fill Levels</div>
+    <div class="slabel">Bin Fill Levels</div>
     <div class="gauge-grid">
 
       <div class="gauge-card dry" id="card-dry">
-        <div class="card-header">
-          <div class="card-title">Dry Waste Bin</div>
-          <div class="card-icon">🗑️</div>
-        </div>
-        <div class="gauge-wrap">
-          <svg class="gauge-svg" width="200" height="120" viewBox="0 0 200 120">
-            <path class="gauge-track" d="M 20 110 A 80 80 0 0 1 180 110" stroke-width="14"/>
-            <path class="gauge-fill" id="arc-dry" d="M 20 110 A 80 80 0 0 1 180 110"
-              stroke="var(--accent-dry)" stroke-width="14"
-              stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
-            <text class="gauge-value" id="val-dry" x="100" y="95" fill="var(--accent-dry)">—</text>
-            <text class="gauge-unit" x="100" y="114">PERCENT FULL</text>
+        <div class="chead"><div class="ctitle">Dry Waste Bin</div><span style="font-size:24px">🗑️</span></div>
+        <div class="gwrap">
+          <svg width="200" height="120" viewBox="0 0 200 120" style="overflow:visible">
+            <path class="gauge-track" d="M20 110 A80 80 0 0 1 180 110" stroke-width="14"/>
+            <path class="gauge-fill" id="arc-dry" d="M20 110 A80 80 0 0 1 180 110"
+              stroke="var(--cyan)" stroke-width="14" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <text class="gval" id="val-dry" x="100" y="94" fill="var(--cyan)">—</text>
+            <text class="gunit" x="100" y="113">PERCENT FULL</text>
           </svg>
-          <span class="status-badge idle" id="badge-dry">● WAITING</span>
+          <span class="badge idle" id="badge-dry">● WAITING</span>
         </div>
       </div>
 
       <div class="gauge-card ewaste" id="card-ewaste">
-        <div class="card-header">
-          <div class="card-title">E-Waste Bin</div>
-          <div class="card-icon">🔌</div>
-        </div>
-        <div class="gauge-wrap">
-          <svg class="gauge-svg" width="200" height="120" viewBox="0 0 200 120">
-            <path class="gauge-track" d="M 20 110 A 80 80 0 0 1 180 110" stroke-width="14"/>
-            <path class="gauge-fill" id="arc-ewaste" d="M 20 110 A 80 80 0 0 1 180 110"
-              stroke="var(--accent-ewaste)" stroke-width="14"
-              stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
-            <text class="gauge-value" id="val-ewaste" x="100" y="95" fill="var(--accent-ewaste)">—</text>
-            <text class="gauge-unit" x="100" y="114">PERCENT FULL</text>
+        <div class="chead"><div class="ctitle">E-Waste Bin</div><span style="font-size:24px">🔌</span></div>
+        <div class="gwrap">
+          <svg width="200" height="120" viewBox="0 0 200 120" style="overflow:visible">
+            <path class="gauge-track" d="M20 110 A80 80 0 0 1 180 110" stroke-width="14"/>
+            <path class="gauge-fill" id="arc-ewaste" d="M20 110 A80 80 0 0 1 180 110"
+              stroke="var(--orange)" stroke-width="14" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <text class="gval" id="val-ewaste" x="100" y="94" fill="var(--orange)">—</text>
+            <text class="gunit" x="100" y="113">PERCENT FULL</text>
           </svg>
-          <span class="status-badge idle" id="badge-ewaste">● WAITING</span>
+          <span class="badge idle" id="badge-ewaste">● WAITING</span>
         </div>
       </div>
 
@@ -291,48 +172,26 @@
   </div>
 
   <div>
-    <div class="section-label">Session Stats</div>
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Readings</div>
-        <div class="stat-value" id="stat-readings" style="color:var(--accent-dry)">0</div>
-        <div class="stat-sub">this session</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg Dry Fill</div>
-        <div class="stat-value" id="stat-avg-dry" style="color:var(--accent-dry)">—</div>
-        <div class="stat-sub">last 10 entries</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg E-Waste Fill</div>
-        <div class="stat-value" id="stat-avg-e" style="color:var(--accent-ewaste)">—</div>
-        <div class="stat-sub">last 10 entries</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Bins at Capacity</div>
-        <div class="stat-value" id="stat-full" style="color:var(--danger)">0</div>
-        <div class="stat-sub">need emptying</div>
-      </div>
+    <div class="slabel">Session Stats</div>
+    <div class="stats-grid">
+      <div class="scard"><div class="sl">Readings</div><div class="sv" id="s-reads" style="color:var(--cyan)">0</div><div class="ss">this session</div></div>
+      <div class="scard"><div class="sl">Avg Dry</div><div class="sv" id="s-avgd" style="color:var(--cyan)">—</div><div class="ss">last 10</div></div>
+      <div class="scard"><div class="sl">Avg E-Waste</div><div class="sv" id="s-avge" style="color:var(--orange)">—</div><div class="ss">last 10</div></div>
+      <div class="scard"><div class="sl">Bins Full</div><div class="sv" id="s-full" style="color:var(--danger)">0</div><div class="ss">need emptying</div></div>
     </div>
   </div>
 
   <div>
-    <div class="section-label">Fill Trend — Last 10 Readings</div>
-    <div class="chart-card">
-      <canvas id="trendChart"></canvas>
-    </div>
+    <div class="slabel">Fill Trend</div>
+    <div class="chart-card"><canvas id="chart"></canvas></div>
   </div>
 
   <div>
-    <div class="section-label">Reading Log</div>
-    <div class="feed-card">
+    <div class="slabel">Reading Log</div>
+    <div class="table-card">
       <table>
-        <thead>
-          <tr><th>#</th><th>Timestamp</th><th>Dry Bin</th><th>E-Waste Bin</th><th>Status</th></tr>
-        </thead>
-        <tbody id="log-body">
-          <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Enter Channel ID above and click Connect</td></tr>
-        </tbody>
+        <thead><tr><th>#</th><th>Time</th><th>Dry Bin</th><th>E-Waste</th><th>Status</th></tr></thead>
+        <tbody id="log"></tbody>
       </table>
     </div>
   </div>
@@ -340,136 +199,191 @@
 </main>
 
 <footer>
-  WasteIQ &nbsp;·&nbsp; ESP32 Smart Waste System &nbsp;·&nbsp;
-  Group 04, Batch A1 &nbsp;·&nbsp; NMAMIT &nbsp;·&nbsp;
-  <span>IoT Level 3 — EC2601-1</span>
+  WasteIQ &nbsp;·&nbsp; Group 04, Batch A1 &nbsp;·&nbsp; NMAMIT &nbsp;·&nbsp;
+  <span>IoT Level 3 — EC2601-1</span> &nbsp;·&nbsp; Auto-refreshes every 15s
 </footer>
 
-<div id="refresh-bar"><div id="refresh-progress"></div></div>
+<div id="pbar"><div id="pfill"></div></div>
 
 <script>
-let CHANNEL_ID   = "";
-let READ_API_KEY = "";
-const REFRESH_MS  = 15000;
-let fetchInterval = null;
-let readingCount  = 0;
-let logRows = [], dryHistory = [], eHistory = [], labels = [];
+const CHANNEL  = "3339508";
+const REFRESH  = 15000;
+const API_URL  = `https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=10`;
 
-// Chart
-const trendChart = new Chart(document.getElementById("trendChart").getContext("2d"), {
+let dryH = [], eH = [], lbls = [], logRows = [], reads = 0;
+
+// ── CHART ──
+const chart = new Chart(document.getElementById("chart").getContext("2d"), {
   type: "line",
   data: {
-    labels,
+    labels: lbls,
     datasets: [
-      { label: "Dry Waste (%)",  data: dryHistory, borderColor: "#00e5ff", backgroundColor: "rgba(0,229,255,.06)", tension: 0.4, fill: true, pointBackgroundColor: "#00e5ff", pointRadius: 4 },
-      { label: "E-Waste (%)",   data: eHistory,   borderColor: "#ff6b35", backgroundColor: "rgba(255,107,53,.06)", tension: 0.4, fill: true, pointBackgroundColor: "#ff6b35", pointRadius: 4 }
+      { label:"Dry Waste (%)", data:dryH, borderColor:"#00e5ff", backgroundColor:"rgba(0,229,255,.06)", tension:.4, fill:true, pointBackgroundColor:"#00e5ff", pointRadius:4 },
+      { label:"E-Waste (%)",   data:eH,   borderColor:"#ff6b35", backgroundColor:"rgba(255,107,53,.06)", tension:.4, fill:true, pointBackgroundColor:"#ff6b35", pointRadius:4 }
     ]
   },
   options: {
-    responsive: true,
-    animation: { duration: 600 },
-    interaction: { mode: "index", intersect: false },
-    plugins: {
-      legend: { labels: { color: "#94a3b8", font: { family: "'Share Tech Mono', monospace", size: 12 } } },
-      tooltip: {
-        backgroundColor: "#111820", borderColor: "#1e2d3d", borderWidth: 1,
-        titleColor: "#e2e8f0", bodyColor: "#94a3b8",
-        titleFont: { family: "'Share Tech Mono', monospace" },
-        bodyFont:  { family: "'Share Tech Mono', monospace" },
-        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` }
+    responsive:true, animation:{duration:600},
+    interaction:{mode:"index",intersect:false},
+    plugins:{
+      legend:{labels:{color:"#94a3b8",font:{family:"'Share Tech Mono',monospace",size:12}}},
+      tooltip:{
+        backgroundColor:"#111820",borderColor:"#1e2d3d",borderWidth:1,
+        titleColor:"#e2e8f0",bodyColor:"#94a3b8",
+        titleFont:{family:"'Share Tech Mono',monospace"},bodyFont:{family:"'Share Tech Mono',monospace"},
+        callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}
       }
     },
-    scales: {
-      x: { ticks: { color: "#64748b", font: { family: "'Share Tech Mono', monospace", size: 10 } }, grid: { color: "rgba(30,45,61,.6)" } },
-      y: { min: 0, max: 100, ticks: { color: "#64748b", font: { family: "'Share Tech Mono', monospace", size: 10 }, callback: v => v+"%" }, grid: { color: "rgba(30,45,61,.6)" } }
+    scales:{
+      x:{ticks:{color:"#64748b",font:{family:"'Share Tech Mono',monospace",size:10}},grid:{color:"rgba(30,45,61,.6)"}},
+      y:{min:0,max:100,ticks:{color:"#64748b",font:{family:"'Share Tech Mono',monospace",size:10},callback:v=>v+"%"},grid:{color:"rgba(30,45,61,.6)"}}
     }
   }
 });
 
-function setArc(id, pct) {
-  const offset = 251.2 - (251.2 * Math.min(Math.max(pct,0),100) / 100);
-  document.getElementById(id).style.strokeDashoffset = offset;
+// ── HELPERS ──
+function arc(id, pct) {
+  document.getElementById(id).style.strokeDashoffset = 251.2 - (251.2 * Math.min(Math.max(pct,0),100)/100);
 }
 
-function setBadge(el, pct) {
-  el.className = "status-badge";
-  if      (pct >= 90) { el.classList.add("danger"); el.textContent = "● CRITICAL"; }
-  else if (pct >= 80) { el.classList.add("danger"); el.textContent = "● FULL"; }
-  else if (pct >= 60) { el.classList.add("warn");   el.textContent = "● FILLING"; }
-  else                { el.classList.add("ok");     el.textContent = "● OK"; }
+function badge(el, pct) {
+  el.className = "badge";
+  if      (pct >= 90){ el.classList.add("full"); el.textContent = "● CRITICAL"; }
+  else if (pct >= 80){ el.classList.add("full"); el.textContent = "● FULL"; }
+  else if (pct >= 60){ el.classList.add("warn"); el.textContent = "● FILLING"; }
+  else               { el.classList.add("ok");   el.textContent = "● OK"; }
 }
 
-function showError(msg) {
-  const box = document.getElementById("error-box");
-  document.getElementById("error-detail").textContent = msg;
-  box.classList.add("visible");
+function setDiag(title, body, isError) {
+  const d = document.getElementById("diag");
+  document.getElementById("diag-title").textContent = title;
+  document.getElementById("diag-body").innerHTML = body;
+  d.className = isError ? "error" : "";
   const dot = document.getElementById("live-dot");
-  dot.classList.add("error");
-  dot.textContent = "ERROR";
-  document.getElementById("last-updated").textContent = "Failed";
+  if (isError) { dot.className = "dot err"; dot.textContent = "ERROR"; }
+  else         { dot.className = "dot";     dot.textContent = "LIVE"; }
 }
 
-function clearError() {
-  document.getElementById("error-box").classList.remove("visible");
-  const dot = document.getElementById("live-dot");
-  dot.classList.remove("error");
-  dot.textContent = "LIVE";
+function progressBar() {
+  const f = document.getElementById("pfill");
+  f.style.transition = "none"; f.style.transform = "scaleX(1)";
+  f.offsetHeight;
+  f.style.transition = `transform ${REFRESH}ms linear`; f.style.transform = "scaleX(0)";
 }
 
-function updateAlert(dry, ewaste) {
-  const banner = document.getElementById("alert-banner");
-  const msgs = [];
-  if (dry >= 80)    msgs.push(`Dry Waste Bin ${dry.toFixed(0)}% — please empty!`);
-  if (ewaste >= 80) msgs.push(`E-Waste Bin ${ewaste.toFixed(0)}% — please empty!`);
-  document.getElementById("alert-text").textContent = msgs.join("  |  ");
-  banner.classList.toggle("visible", msgs.length > 0);
-}
-
-function addLogRow(dry, ewaste, time) {
-  logRows.unshift({ dry, ewaste, time, status: (dry>=80||ewaste>=80) ? "⚠️ Alert" : "✅ Normal" });
-  if (logRows.length > 20) logRows.pop();
-  document.getElementById("log-body").innerHTML = logRows.map((r,i) => `
-    <tr>
-      <td style="color:var(--muted)">${logRows.length-i}</td>
-      <td>${r.time}</td>
-      <td style="color:var(--accent-dry)">${r.dry.toFixed(1)}%</td>
-      <td style="color:var(--accent-ewaste)">${r.ewaste.toFixed(1)}%</td>
-      <td>${r.status}</td>
-    </tr>`).join("");
-}
-
-function startProgressBar() {
-  const bar = document.getElementById("refresh-progress");
-  bar.style.transition = "none";
-  bar.style.transform  = "scaleX(1)";
-  bar.offsetHeight;
-  bar.style.transition = `transform ${REFRESH_MS}ms linear`;
-  bar.style.transform  = "scaleX(0)";
-}
-
+// ── FETCH ──
 async function fetchData() {
-  if (!CHANNEL_ID) return;
-  let url = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=10`;
-  if (READ_API_KEY) url += `&api_key=${READ_API_KEY}`;
-
   try {
-    const res = await fetch(url);
+    const res = await fetch(API_URL);
 
     if (!res.ok) {
-      const errMap = {
-        404: `Channel "${CHANNEL_ID}" not found. Double-check your Channel ID.`,
-        401: `Access denied. Channel is PRIVATE.\n→ Go to ThingSpeak → My Channels → API Keys\n→ Copy the Read API Key and paste it in the field above.`,
-        403: `Access denied. Channel is PRIVATE.\n→ Go to ThingSpeak → My Channels → API Keys\n→ Copy the Read API Key and paste it in the field above.`,
-      };
-      showError(errMap[res.status] || `HTTP error ${res.status} from ThingSpeak.`);
+      setDiag(
+        `⚠ HTTP ${res.status} Error`,
+        res.status === 404
+          ? `Channel <b>${CHANNEL}</b> does not exist on ThingSpeak.<br>Check your channel ID.`
+          : res.status === 401 || res.status === 403
+          ? `Channel <b>${CHANNEL}</b> returned "Access Denied".<br>Go to ThingSpeak → My Channels → Sharing → set to <b>Public</b>.`
+          : `ThingSpeak returned HTTP ${res.status}. Try again later.`,
+        true
+      );
       return;
     }
 
     const json = await res.json();
+    const feeds = json.feeds || [];
 
-    if (!json.feeds || json.feeds.length === 0) {
-      showError(`Channel ${CHANNEL_ID} connected but has NO DATA yet.\nMake sure your ESP32 is powered on and WiFi is connected.\nThe ESP32 sends data only when waste is detected (IR sensor).`);
+    if (feeds.length === 0) {
+      setDiag(
+        "⚠ Channel is empty — No data received yet",
+        `Channel <b>${CHANNEL}</b> connected successfully but has <b>0 entries</b>.<br><br>` +
+        `<b>Most likely cause:</b> Your ESP32 has not sent any data yet.<br>` +
+        `<b>Steps to fix:</b><br>` +
+        `&nbsp;1. Open Arduino IDE → Serial Monitor (115200 baud)<br>` +
+        `&nbsp;2. Power on your ESP32<br>` +
+        `&nbsp;3. Look for: <code>Connecting to WiFi... Connected!</code><br>` +
+        `&nbsp;4. Trigger the IR sensor (wave your hand) → ESP32 should print <code>ThingSpeak Update Successful</code><br>` +
+        `&nbsp;5. Check your Write API Key in the Arduino sketch matches ThingSpeak → API Keys<br><br>` +
+        `<a href="https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=2" target="_blank">→ Click here to verify channel data in browser</a>`,
+        true
+      );
       return;
     }
 
-    const hasRealData = json.feeds.some(f => f.f
+    // Check if all fields are null
+    const hasValues = feeds.some(f => f.field1 !== null || f.field2 !== null);
+    if (!hasValues) {
+      setDiag(
+        "⚠ Data fields are all null",
+        `Channel <b>${CHANNEL}</b> has ${feeds.length} entries but <b>field1 and field2 are all null</b>.<br><br>` +
+        `<b>Fix in your ESP32 code:</b><br>` +
+        `&nbsp;• Make sure <code>ThingSpeak.setField(1, dryLevel);</code> runs before <code>writeFields()</code><br>` +
+        `&nbsp;• Make sure <code>ThingSpeak.setField(2, eLevel);</code> runs before <code>writeFields()</code><br>` +
+        `&nbsp;• Verify <code>writeAPIKey</code> in Arduino sketch is your <b>Write</b> API Key (not Read)<br><br>` +
+        `<a href="https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=2" target="_blank">→ Inspect raw channel data</a>`,
+        true
+      );
+      return;
+    }
+
+    // ── SUCCESS ──
+    setDiag(
+      `✅ Connected — Channel ${CHANNEL}`,
+      `Fetching every 15 seconds &nbsp;|&nbsp; Last entry: ${new Date(feeds[feeds.length-1].created_at).toLocaleString()}&nbsp;|&nbsp; ` +
+      `<a href="https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=10" target="_blank">View raw JSON</a>`,
+      false
+    );
+
+    // Rebuild chart
+    dryH.length = eH.length = lbls.length = 0;
+    feeds.forEach(f => {
+      dryH.push(isNaN(parseFloat(f.field1)) ? 0 : parseFloat(f.field1));
+      eH.push(isNaN(parseFloat(f.field2)) ? 0 : parseFloat(f.field2));
+      lbls.push(new Date(f.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
+    });
+    chart.update();
+
+    const latest = feeds[feeds.length - 1];
+    const dry    = isNaN(parseFloat(latest.field1)) ? 0 : parseFloat(latest.field1);
+    const ewaste = isNaN(parseFloat(latest.field2)) ? 0 : parseFloat(latest.field2);
+    const ts     = new Date(latest.created_at).toLocaleTimeString();
+
+    arc("arc-dry",    dry);
+    arc("arc-ewaste", ewaste);
+    document.getElementById("val-dry").textContent    = dry.toFixed(0) + "%";
+    document.getElementById("val-ewaste").textContent = ewaste.toFixed(0) + "%";
+    badge(document.getElementById("badge-dry"),    dry);
+    badge(document.getElementById("badge-ewaste"), ewaste);
+    document.getElementById("card-dry").classList.toggle("alert-active",    dry>=80);
+    document.getElementById("card-ewaste").classList.toggle("alert-active", ewaste>=80);
+
+    const alertMsgs = [];
+    if (dry >= 80)    alertMsgs.push(`Dry Waste ${dry.toFixed(0)}% — Empty now!`);
+    if (ewaste >= 80) alertMsgs.push(`E-Waste ${ewaste.toFixed(0)}% — Empty now!`);
+    const ab = document.getElementById("alert-banner");
+    document.getElementById("alert-txt").textContent = alertMsgs.join("  |  ");
+    ab.classList.toggle("show", alertMsgs.length > 0);
+
+    reads++;
+    logRows.unshift({ dry, ewaste, ts, ok: dry<80 && ewaste<80 });
+    if (logRows.length > 20) logRows.pop();
+    document.getElementById("log").innerHTML = logRows.map((r,i)=>`
+      <tr>
+        <td style="color:var(--muted)">${logRows.length-i}</td>
+        <td>${r.ts}</td>
+        <td style="color:var(--cyan)">${r.dry.toFixed(1)}%</td>
+        <td style="color:var(--orange)">${r.ewaste.toFixed(1)}%</td>
+        <td>${r.ok ? "✅ Normal" : "⚠️ Alert"}</td>
+      </tr>`).join("");
+
+    document.getElementById("s-reads").textContent = reads;
+    document.getElementById("s-avgd").textContent  = (dryH.reduce((a,b)=>a+b,0)/dryH.length).toFixed(1)+"%";
+    document.getElementById("s-avge").textContent  = (eH.reduce((a,b)=>a+b,0)/eH.length).toFixed(1)+"%";
+    document.getElementById("s-full").textContent  = (dry>=80?1:0)+(ewaste>=80?1:0);
+    document.getElementById("ts-updated").textContent = "Updated " + ts;
+
+    progressBar();
+
+  } catch(err) {
+    setDiag(
+      "⚠ Cannot reach ThingSpeak",
+      `<b>Error:</b> ${
