@@ -3,48 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WasteIQ Smart Waste System</title>
+<title>WasteIQ Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:'Poppins';background:#0f172a;color:white}
+body{
+  margin:0;
+  font-family:'Poppins';
+  background:#0f172a;
+  color:white;
+  transition:.3s;
+}
+
+/* LIGHT MODE */
+.light{
+  background:#f5f7fa;
+  color:#111;
+}
 
 /* NAV */
-nav{display:flex;justify-content:space-between;padding:15px 40px;background:#020617;position:sticky;top:0}
-nav a{color:white;margin-left:20px;text-decoration:none}
+nav{
+  display:flex;
+  justify-content:space-between;
+  padding:15px 40px;
+  background:#020617;
+}
+nav button{
+  padding:5px 10px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
 
 /* HERO */
 .hero{
-height:90vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
-background:linear-gradient(135deg,#22c55e,#0ea5e9);text-align:center;
+  height:80vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#22c55e,#0ea5e9);
+  text-align:center;
 }
-.hero button{padding:10px 20px;border:none;border-radius:10px;background:white;color:#22c55e}
 
-/* SECTIONS */
-section{padding:60px 40px;text-align:center}
+/* SECTION */
+section{padding:50px;text-align:center}
+
+/* CARDS */
 .cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
-.card{background:#020617;padding:20px;border-radius:15px;width:250px}
-
-/* DASHBOARD */
+.card{
+  background:#020617;
+  padding:20px;
+  border-radius:15px;
+  width:250px;
+}
 .value{font-size:40px;font-weight:bold}
-.ok{color:#22c55e}.warn{color:#f59e0b}.danger{color:#ef4444}
 
-canvas{background:white;border-radius:10px;margin-top:20px}
+.ok{color:#22c55e}
+.warn{color:#f59e0b}
+.danger{color:#ef4444}
 
-/* ACTIVITIES */
-.table{
-width:100%;margin-top:30px;border-collapse:collapse;
+/* TABLE */
+table{width:100%;margin-top:20px;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #1e293b}
+
+/* BUTTON */
+.btn{
+  margin-top:15px;
+  padding:10px 15px;
+  border:none;
+  background:#22c55e;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
 }
-.table th,.table td{
-padding:10px;border-bottom:1px solid #1e293b;text-align:center;
+
+/* ALERT POPUP */
+#popup{
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#ef4444;
+  padding:15px;
+  border-radius:10px;
+  display:none;
 }
-.table th{color:#94a3b8}
-
-/* FOOTER */
-footer{padding:20px;background:#020617}
-
 </style>
 </head>
 
@@ -53,30 +98,18 @@ footer{padding:20px;background:#020617}
 <nav>
 <h2>WasteIQ</h2>
 <div>
-<a href="#home">Home</a>
-<a href="#features">Features</a>
-<a href="#dashboard">Dashboard</a>
-<a href="#activity">Activity</a>
+<button onclick="toggleMode()">🌙</button>
+<span id="status">🟢 Live</span>
 </div>
 </nav>
 
-<div class="hero" id="home">
-<h1>Smart Waste Monitoring System</h1>
-<p>Real-time IoT waste tracking</p>
-<button onclick="document.getElementById('dashboard').scrollIntoView()">View Dashboard</button>
+<div class="hero">
+<h1>Smart Waste Monitoring</h1>
+<p>Real-time IoT System</p>
 </div>
 
-<section id="features">
-<h2>Features</h2>
-<div class="cards">
-<div class="card"><h3>Live Data</h3></div>
-<div class="card"><h3>Alerts</h3></div>
-<div class="card"><h3>Cloud Storage</h3></div>
-</div>
-</section>
-
-<section id="dashboard">
-<h2>Live Dashboard</h2>
+<section>
+<h2>Dashboard</h2>
 
 <div class="cards">
 <div class="card">
@@ -93,38 +126,27 @@ footer{padding:20px;background:#020617}
 </div>
 
 <canvas id="chart"></canvas>
+
+<button class="btn" onclick="downloadCSV()">Download Data</button>
 </section>
 
-<!-- 🔥 NEW SECTION -->
-<section id="activity">
-<h2>Recent Activities</h2>
+<section>
+<h2>Recent Activity</h2>
 
-<table class="table">
+<table>
 <thead>
-<tr>
-<th>#</th>
-<th>Time</th>
-<th>Dry (%)</th>
-<th>E-Waste (%)</th>
-<th>Status</th>
-</tr>
+<tr><th>#</th><th>Time</th><th>Dry</th><th>E-Waste</th><th>Status</th></tr>
 </thead>
-
-<tbody id="log">
-<tr><td colspan="5">Waiting for data...</td></tr>
-</tbody>
-
+<tbody id="log"></tbody>
 </table>
 </section>
 
-<footer>
-© 2026 WasteIQ Project
-</footer>
+<div id="popup">⚠️ Bin Full!</div>
 
 <script>
 const API="https://api.thingspeak.com/channels/3339508/feeds.json?results=10";
 
-let dArr=[], eArr=[], labels=[], logs=[];
+let dArr=[],eArr=[],labels=[],logs=[];
 
 const chart=new Chart(document.getElementById("chart"),{
 type:"line",
@@ -135,12 +157,19 @@ data:{labels:labels,datasets:[
 });
 
 function status(val,el){
-if(val>=80){el.innerHTML="<span class='danger'>FULL</span>"}
-else if(val>=60){el.innerHTML="<span class='warn'>FILLING</span>"}
-else{el.innerHTML="<span class='ok'>OK</span>"}
+if(val>=80){el.innerHTML="<span class='danger'>FULL</span>"; showPopup();}
+else if(val>=60){el.innerHTML="<span class='warn'>FILLING</span>";}
+else{el.innerHTML="<span class='ok'>OK</span>";}
+}
+
+function showPopup(){
+const p=document.getElementById("popup");
+p.style.display="block";
+setTimeout(()=>p.style.display="none",3000);
 }
 
 async function load(){
+try{
 const res=await fetch(API);
 const data=await res.json();
 const last=data.feeds[data.feeds.length-1];
@@ -155,12 +184,12 @@ status(d,dStatus);
 status(e,eStatus);
 
 /* chart */
-dArr.push(d); eArr.push(e);
+dArr.push(d);eArr.push(e);
 labels.push(new Date().toLocaleTimeString());
 if(dArr.length>10){dArr.shift();eArr.shift();labels.shift();}
 chart.update();
 
-/* activity log */
+/* log */
 logs.unshift({d,e,time:new Date().toLocaleTimeString()});
 if(logs.length>10)logs.pop();
 
@@ -170,10 +199,28 @@ log.innerHTML=logs.map((r,i)=>`
 <td>${r.time}</td>
 <td>${r.d}%</td>
 <td>${r.e}%</td>
-<td>${(r.d>=80||r.e>=80)?"⚠️ Alert":"Normal"}</td>
-</tr>
-`).join("");
+<td>${(r.d>=80||r.e>=80)?"⚠️":"OK"}</td>
+</tr>`).join("");
 
+}catch{
+document.getElementById("status").innerText="🔴 Offline";
+}
+}
+
+function toggleMode(){
+document.body.classList.toggle("light");
+}
+
+function downloadCSV(){
+let csv="Time,Dry,E-Waste\n";
+logs.forEach(r=>{
+csv+=`${r.time},${r.d},${r.e}\n`;
+});
+let blob=new Blob([csv]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="data.csv";
+a.click();
 }
 
 setInterval(load,15000);
